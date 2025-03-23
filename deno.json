@@ -1,0 +1,18 @@
+{
+  "lock": false,
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": true,
+    "proseWrap": "preserve",
+    "include": ["./"],
+    "exclude": []
+  },
+  "tasks": {
+  },
+  "imports": {
+    "binpat": "./binpat.ts"
+  }
+}

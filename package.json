@@ -1,0 +1,31 @@
+{
+  "name": "binpat",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "A simple binary data pattern matcher.",
+  "main": "dist/binpat.js",
+  "module": "dist/binpat.js",
+  "types": "dist/binpat.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "transpile": "tsc -d -t esnext -m esnext --lib esnext,dom binpat.ts --outDir dist",
+    "minify": "terser dist/binpat.js --compress --mangle -o dist/binpat.js",
+    "build": "npm run transpile && npm run minify",
+    "version": "npm run build",
+    "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weizhenye/binpat.git"
+  },
+  "author": "Zhenye Wei",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/weizhenye/binpat/issues"
+  },
+  "homepage": "https://github.com/weizhenye/binpat#readme",
+  "devDependencies": {
+    "terser": "^5.39.0",
+    "typescript": "^5.8.2"
+  }
+}
