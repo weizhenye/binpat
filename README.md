@@ -1,6 +1,7 @@
 # binpat
 
 [![GitHub Action](https://img.shields.io/github/actions/workflow/status/weizhenye/binpat/ci.yml?logo=github)](https://github.com/weizhenye/binpat/actions)
+[![Codecov](https://img.shields.io/codecov/c/gh/weizhenye/binpat?logo=codecov)](https://codecov.io/gh/weizhenye/binpat)
 [![License](https://img.shields.io/npm/l/binpat)](https://github.com/weizhenye/binpat/blob/master/LICENSE)
 [![File size](https://img.shields.io/bundlephobia/minzip/binpat)](https://bundlephobia.com/result?p=binpat)
 

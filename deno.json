@@ -1,4 +1,14 @@
 {
+  "name": "@aho/binpat",
+  "exports": "./binpat.ts",
+  "publish": {
+    "include": [
+      "binpat.ts",
+      "jsr.json",
+      "LICENSE",
+      "README.md"
+    ]
+  },
   "lock": false,
   "fmt": {
     "useTabs": false,
