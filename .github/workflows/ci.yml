@@ -1,0 +1,31 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@main
+    - uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2.x
+    - run: deno test --coverage
+    - run: deno coverage --lcov --output=coverage/cov.lcov
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage/cov.lcov
+      if: github.event_name == 'push'
+      continue-on-error: true
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@main
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - run: npm i
+    - run: npm run build
