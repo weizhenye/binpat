@@ -7,7 +7,6 @@ on:
 
 jobs:
   jsr:
-    name: publish-to-jsr
     runs-on: ubuntu-latest
     permissions:
       contents: read

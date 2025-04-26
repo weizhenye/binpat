@@ -219,7 +219,9 @@ Deno.test('spread', () => {
       { falsy: u8() },
     ),
   });
+  // @ts-ignore
   assertEquals(binpat.exec(new Uint8Array([1, 1]).buffer), { flag: true, truthy: 1 });
+  // @ts-ignore
   assertEquals(binpat.exec(new Uint8Array([0, 1]).buffer), { flag: false, falsy: 1 });
 });
 
