@@ -1,6 +1,6 @@
 {
   "name": "binpat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Parse binary data using declarative patterns.",
   "keywords": [
