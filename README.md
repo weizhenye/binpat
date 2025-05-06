@@ -14,7 +14,7 @@ Binpat simplifies parsing binary data in JavaScript by allowing you to define th
 
 ## Features
 
-- Common types: `u8`...`u64`, `i8`...`i64`, `f16`...`f64`, `bool`, `string` and `array(pattern, size)`.
+- Common types: `u8`...`u64`, `i8`...`i64`, `f16`...`f64`, `bool`, `string`, `bitfield` and `array(pattern, size)`.
 - Conditional parsing with `ternary(condition, truthy, falsy)`.
 - Transform parsed values using `convert(pattern, fn)`.
 - Control parsing offset with `skip(offset)`, `seek(offset)` and `peek(offset, pattern)`.

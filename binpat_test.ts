@@ -1,6 +1,7 @@
 import { assertEquals } from '@std/assert';
 import Binpat, {
   array,
+  bitfield,
   bool,
   convert,
   f16,
@@ -112,6 +113,50 @@ Deno.test('string', () => {
   assertEquals(binpat.exec(new Uint8Array([3, ...utf8]).buffer), { size: 3, text: 'bin' });
 });
 
+Deno.test('bitfield', () => {
+  const layout = {
+    a: 3,
+    b: bitfield.u(3),
+    [omit('padding')]: 4,
+    c: bitfield.i(5),
+    d: bitfield.bool(),
+  };
+  const { buffer } = new Uint8Array([0b01010101, 0b11001100]);
+
+  // 0b01010101 0b11001100
+  //   aaabbbpp   ppcccccd
+  const binpat1 = new Binpat(bitfield(layout, { endian: 'big', first: 'MSb' }));
+  assertEquals(binpat1.exec(buffer), { a: 0b010, b: 0b101, c: 0b00110, d: !!0b0 });
+  const binpat1_2 = new Binpat(bitfield(layout));
+  assertEquals(binpat1_2.exec(buffer), { a: 0b010, b: 0b101, c: 0b00110, d: !!0b0 });
+
+  // 0b01010101 0b11001100
+  //   dcccccpp   ppbbbaaa
+  const binpat2 = new Binpat(bitfield(layout, { endian: 'big', first: 'LSb' }));
+  assertEquals(binpat2.exec(buffer), { a: 0b100, b: 0b001, c: 0b10101 - 32, d: !!0b0 });
+
+  // 0b11001100 0b01010101
+  //   aaabbbpp   ppcccccd
+  const binpat3 = new Binpat(bitfield(layout, { endian: 'little', first: 'MSb' }));
+  assertEquals(binpat3.exec(buffer), { a: 0b110, b: 0b011, c: 0b01010, d: !!0b1 });
+
+  // 0b11001100 0b01010101
+  //   dcccccpp   ppbbbaaa
+  const binpat4 = new Binpat(bitfield(layout, { endian: 'little', first: 'LSb' }));
+  assertEquals(binpat4.exec(buffer), { a: 0b101, b: 0b010, c: 0b10011 - 32, d: !!0b1 });
+  const binpat4_2 = new Binpat(bitfield(layout), { endian: 'little' });
+  assertEquals(binpat4_2.exec(buffer), { a: 0b101, b: 0b010, c: 0b10011 - 32, d: !!0b1 });
+
+  // 0b01010101 0b11001100
+  //   aaaaaaab   bbbbbbpp
+  const binpat5 = new Binpat(bitfield({ a: 7, b: 7 }, { first: 'MSb' }));
+  assertEquals(binpat5.exec(buffer), { a: 0b0101010, b: 0b1110011 });
+  // 0b01010101 0b11001100
+  //   ppbbbbbb   baaaaaaa
+  const binpat5_2 = new Binpat(bitfield({ a: 7, b: 7 }, { first: 'LSb' }));
+  assertEquals(binpat5_2.exec(buffer), { a: 0b1001100, b: 0b0101011 });
+});
+
 Deno.test('array', () => {
   const binpat1 = new Binpat(array(u8(), 4));
   assertEquals(
@@ -146,6 +191,13 @@ Deno.test('ternary', () => {
   });
   assertEquals(binpat.exec(new Uint8Array([0, 0xff]).buffer), { flag: false, value: -1 });
   assertEquals(binpat.exec(new Uint8Array([1, 0xff]).buffer), { flag: true, value: 0xff });
+
+  const binpat2 = new Binpat({
+    flag: bool(),
+    value: ternary((ctx) => ctx.data.flag, u8()),
+  });
+  assertEquals(binpat2.exec(new Uint8Array([1, 1]).buffer), { flag: true, value: 1 });
+  assertEquals(binpat2.exec(new Uint8Array([0, 1]).buffer), { flag: false, value: undefined });
 });
 
 Deno.test('convert', () => {

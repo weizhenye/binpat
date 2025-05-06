@@ -2,7 +2,14 @@
   "name": "binpat",
   "version": "0.1.0",
   "type": "module",
-  "description": "A simple binary data pattern matcher.",
+  "description": "Parse binary data using declarative patterns.",
+  "keywords": [
+    "binary",
+    "pattern",
+    "schema",
+    "parser",
+    "DataView"
+  ],
   "main": "dist/binpat.js",
   "module": "dist/binpat.js",
   "types": "dist/binpat.d.ts",
