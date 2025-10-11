@@ -22,7 +22,7 @@ import Binpat, {
   u32,
   u64,
   u8,
-} from 'binpat';
+} from './binpat.ts';
 
 Deno.test('u8', () => {
   const { buffer } = new Uint8Array([1]);

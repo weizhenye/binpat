@@ -22,7 +22,6 @@
   "tasks": {
   },
   "imports": {
-    "@std/assert": "jsr:@std/assert@^1.0.12",
-    "binpat": "./binpat.ts"
+    "@std/assert": "jsr:@std/assert@^1.0.12"
   }
 }
