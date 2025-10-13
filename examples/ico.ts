@@ -1,7 +1,7 @@
 // deno run --allow-read ./examples/ico.ts ./examples/favicon.ico
 
-import type { BinpatContext } from 'binpat';
-import Binpat, { array, convert, omit, peek, spread, ternary, u16, u32, u8 } from 'binpat';
+import type { BinpatContext } from '../binpat.ts';
+import Binpat, { array, convert, omit, peek, spread, ternary, u16, u32, u8 } from '../binpat.ts';
 
 // https://www.daubnet.com/en/file-format-ico
 const ico = new Binpat({

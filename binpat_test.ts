@@ -254,26 +254,30 @@ Deno.test('skip', () => {
 });
 
 Deno.test('omit', () => {
+  assertEquals(omit().startsWith('//'), true);
+  assertEquals(omit() !== omit(), true);
+
   const binpat = new Binpat({
     foo: u8(),
-    [omit('bar')]: u8(),
+    '// bar': u8(),
     baz: u8(),
   });
   assertEquals(binpat.exec(new Uint8Array([1, 2, 3]).buffer), { foo: 1, baz: 3 });
 });
 
 Deno.test('spread', () => {
+  assertEquals(spread().startsWith('...'), true);
+  assertEquals(spread() !== spread(), true);
+
   const binpat = new Binpat({
     flag: bool(),
-    [spread()]: ternary(
+    '...spread': ternary(
       (ctx) => ctx.data.flag,
       { truthy: u8() },
       { falsy: u8() },
     ),
   });
-  // @ts-ignore
   assertEquals(binpat.exec(new Uint8Array([1, 1]).buffer), { flag: true, truthy: 1 });
-  // @ts-ignore
   assertEquals(binpat.exec(new Uint8Array([0, 1]).buffer), { flag: false, falsy: 1 });
 });
 

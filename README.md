@@ -9,8 +9,7 @@ Binpat simplifies parsing binary data in JavaScript by allowing you to define th
 
 - **Declarative**: Define what your data looks like, no more manual `DataView` operations and offsets.
 - **Readable**: Patterns often closely resemble the desired output object structure.
-- **_Almost_ Type Safe**: Built with TypeScript, providing inferred return types based on your patterns.
-  - However for `omit()` and `spread()`, I'm failed to pass the type gymnastics, help is welcomed.
+- **Type Safe**: Built with TypeScript, providing inferred return types based on your patterns.
 
 ## Features
 
@@ -321,7 +320,7 @@ console.log(binpat.exec(buffer));
 // { foo: 1, bar: 2 }
 ```
 
-### omit(comment)
+### omit(comment?)
 
 Omit the key-value in result.
 
@@ -340,7 +339,19 @@ console.log(binpat.exec(buffer));
 // { type: 1, count: 1 }
 ```
 
-### spread()
+Due to [a TypeScript bug](https://github.com/microsoft/TypeScript/issues/13948), you'll get wrong type with `omit()`. To solve it, you can use string literal starts with `//` as object key:
+
+```js
+const binpat = new Binpat({
+  '// reserved': u16(),
+  type: u16(),
+  count: u16(),
+  // and you should avoid duplicate key when define the omit
+  '// another reserved': u16(),
+});
+```
+
+### spread(comment?)
 
 It works like spread syntax `...`, and usually be used with `ternary()`.
 
@@ -359,4 +370,17 @@ console.log(binpat.exec(new Uint8Array([1, 0]).buffer));
 // { flag: true, truthy: 0 }
 console.log(binpat.exec(new Uint8Array([0, 0]).buffer));
 // { flag: false, falsy: 0 }
+```
+
+And like `omit()`, you can use string literal starts with `...` as object key to get correct type inference:
+
+```js
+const binpat = new Binpat({
+  flag: bool(),
+  '...foo': ternary(
+    (ctx) => ctx.data.flag,
+    { truthy: u8() },
+    { falsy: u8() },
+  ),
+});
 ```
