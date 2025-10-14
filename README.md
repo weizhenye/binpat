@@ -346,7 +346,7 @@ const binpat = new Binpat({
   '// reserved': u16(),
   type: u16(),
   count: u16(),
-  // and you should avoid duplicate key when define the omit
+  // and you should avoid duplicate key
   '// another reserved': u16(),
 });
 ```

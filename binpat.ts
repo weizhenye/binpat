@@ -51,7 +51,7 @@ type InferOutput<P> =
     // 5. Fallback (should ideally not be reached with well-defined patterns)
     : any;
 
-const BINPAT_ARRAY = Symbol('array');
+const BINPAT_ARRAY = Symbol.for('binpat.array');
 
 function exec<P extends BinpatPattern>(
   dv: DataView,
@@ -414,13 +414,13 @@ export function ternary<T extends BinpatPattern, F extends BinpatPattern>(
   condition: (ctx: BinpatContext) => boolean,
   truthy: T,
   falsy?: F,
-): BinpatHandler<InferOutput<T> | InferOutput<F>> {
+): BinpatHandler<InferOutput<T> | (undefined extends F ? undefined : InferOutput<F>)> {
   function handler(dv: DataView, ctx: BinpatContext) {
     const pattern = condition(ctx) ? truthy : falsy;
     if (pattern === undefined) return undefined;
     return exec(dv, pattern, ctx);
   }
-  return handler as BinpatHandler<InferOutput<T> | InferOutput<F>>;
+  return handler as any;
 }
 
 /**
