@@ -49,7 +49,7 @@ type InferOutput<P> =
     // 4. Handle literal types directly passed in pattern
     : P extends string | number | boolean | bigint | null | undefined ? P
     // 5. Fallback (should ideally not be reached with well-defined patterns)
-    : any;
+    : unknown;
 
 const BINPAT_ARRAY = Symbol.for('binpat.array');
 
@@ -146,17 +146,19 @@ type GetElementType<C> = C extends new () => infer T
   ? T extends { [n: number]: infer E } ? E : never
   : never;
 
-type BinpatTypedHander<C extends TypedArrayConstructor> =
+type BinpatTypedHandler<C extends TypedArrayConstructor> =
   & BinpatHandler<GetElementType<C>>
   & { [BINPAT_ARRAY]: C };
 
-function createTypedHandler<C extends TypedArrayConstructor>(constructor: C): (
+type GenTypedHandler<C extends TypedArrayConstructor> = (
   /**
    * Indicates whether the data is stored in little- or big-endian format.
    * If not specified, the global endianness is used.
    */
   littleEndian?: boolean,
-) => BinpatTypedHander<C> {
+) => BinpatTypedHandler<C>;
+
+function createTypedHandler<C extends TypedArrayConstructor>(constructor: C): GenTypedHandler<C> {
   return (littleEndian?: boolean) => {
     function handler(dv: DataView, ctx: BinpatContext) {
       const le = littleEndian ?? ctx.endian === 'little';
@@ -166,34 +168,34 @@ function createTypedHandler<C extends TypedArrayConstructor>(constructor: C): (
       return value;
     }
     (handler as any)[BINPAT_ARRAY] = constructor;
-    return handler as BinpatTypedHander<C>;
+    return handler as BinpatTypedHandler<C>;
   };
 }
 
 /** Reads 1 byte and interprets it as an 8-bit unsigned integer. */
-export const u8 = createTypedHandler(Uint8Array) as () => BinpatTypedHander<Uint8ArrayConstructor>;
+export const u8 = createTypedHandler(Uint8Array) as () => BinpatTypedHandler<Uint8ArrayConstructor>;
 /** Reads 2 bytes and interprets them as a 16-bit unsigned integer. */
-export const u16 = createTypedHandler(Uint16Array);
+export const u16 = createTypedHandler(Uint16Array) as GenTypedHandler<Uint16ArrayConstructor>;
 /** Reads 4 bytes and interprets them as a 32-bit unsigned integer. */
-export const u32 = createTypedHandler(Uint32Array);
+export const u32 = createTypedHandler(Uint32Array) as GenTypedHandler<Uint32ArrayConstructor>;
 /** Reads 8 bytes and interprets them as a 64-bit unsigned integer. */
-export const u64 = createTypedHandler(BigUint64Array);
+export const u64 = createTypedHandler(BigUint64Array) as GenTypedHandler<BigUint64ArrayConstructor>;
 
 /** Reads 1 byte and interprets it as an 8-bit signed integer. */
-export const i8 = createTypedHandler(Int8Array) as () => BinpatTypedHander<Int8ArrayConstructor>;
+export const i8 = createTypedHandler(Int8Array) as () => BinpatTypedHandler<Int8ArrayConstructor>;
 /** Reads 2 bytes and interprets them as a 16-bit signed integer. */
-export const i16 = createTypedHandler(Int16Array);
+export const i16 = createTypedHandler(Int16Array) as GenTypedHandler<Int16ArrayConstructor>;
 /** Reads 4 bytes and interprets them as a 32-bit signed integer. */
-export const i32 = createTypedHandler(Int32Array);
+export const i32 = createTypedHandler(Int32Array) as GenTypedHandler<Int32ArrayConstructor>;
 /** Reads 8 bytes and interprets them as a 64-bit signed integer. */
-export const i64 = createTypedHandler(BigInt64Array);
+export const i64 = createTypedHandler(BigInt64Array) as GenTypedHandler<BigInt64ArrayConstructor>;
 
 /** Reads 2 bytes and interprets them as a 16-bit floating point number. */
-export const f16 = createTypedHandler(Float16Array);
+export const f16 = createTypedHandler(Float16Array) as GenTypedHandler<Float16ArrayConstructor>;
 /** Reads 4 bytes and interprets them as a 32-bit floating point number. */
-export const f32 = createTypedHandler(Float32Array);
+export const f32 = createTypedHandler(Float32Array) as GenTypedHandler<Float32ArrayConstructor>;
 /** Reads 8 bytes and interprets them as a 64-bit floating point number. */
-export const f64 = createTypedHandler(Float64Array);
+export const f64 = createTypedHandler(Float64Array) as GenTypedHandler<Float64ArrayConstructor>;
 
 /** Reads 1 byte and and interprets it as a boolean value. */
 export function bool(): BinpatHandler<boolean> {
@@ -336,7 +338,7 @@ export function bitfield<Layout extends BitfieldLayout>(
   function handler(dv: DataView, ctx: BinpatContext): InferBitfieldOutput<Layout> {
     const endian = option.endian || ctx.endian;
     const first = option.first || (endian === 'big' ? 'MSb' : 'LSb');
-    let kvs = Object.entries(field).map(([key, value]) => {
+    const kvs = Object.entries(field).map(([key, value]) => {
       const definition = typeof value === 'number' ? { type: 'u', size: value } : value;
       return [key, definition] as [string, BitfieldType];
     });
@@ -349,7 +351,7 @@ export function bitfield<Layout extends BitfieldLayout>(
     if (first === 'LSb') {
       kvs.reverse();
     }
-    let bytes = new Uint8Array(dv.buffer.slice(ctx.offset, ctx.offset + byteSize));
+    const bytes = new Uint8Array(dv.buffer.slice(ctx.offset, ctx.offset + byteSize));
     if (endian === 'little') {
       bytes.reverse();
     }
@@ -420,7 +422,7 @@ export function ternary<T extends BinpatPattern, F extends BinpatPattern>(
     if (pattern === undefined) return undefined;
     return exec(dv, pattern, ctx);
   }
-  return handler as any;
+  return handler as BinpatHandler<InferOutput<T> | (undefined extends F ? undefined : InferOutput<F>)>;
 }
 
 /**
@@ -569,7 +571,7 @@ function random() {
  * const { buffer } = new Uint8Array([0, 0, 0, 1, 0, 1]);
  * assertEquals(binpat.exec(buffer), { type: 1, count: 1 });
  */
-export function omit(comment?: any): `//${string}` {
+export function omit(comment?: unknown): `//${string}` {
   return `//${random()}`;
 }
 
@@ -610,6 +612,6 @@ export function omit(comment?: any): `//${string}` {
  * assertEquals(binpat.exec(new Uint8Array([0, 0]).buffer), { flag: false, falsy: 0 });
  * ```
  */
-export function spread(comment?: any): `...${string}` {
+export function spread(comment?: unknown): `...${string}` {
   return `...${random()}`;
 }
