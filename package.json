@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "transpile": "tsc -d -t esnext -m esnext --lib esnext,dom binpat.ts --outDir dist",
-    "minify": "terser dist/binpat.js --compress --mangle -o dist/binpat.js",
+    "minify": "terser dist/binpat.js --compress --mangle --module -o dist/binpat.js",
     "build": "npm run transpile && npm run minify",
     "version": "npm run build",
     "postversion": "git push && git push --tags"
