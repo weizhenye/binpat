@@ -268,8 +268,14 @@ export function array<P extends BinpatPattern>(
 > {
   function handler(dv: DataView, ctx: BinpatContext) {
     const len = typeof size === 'function' ? size(ctx) : size;
-    return ((pattern as any)[BINPAT_ARRAY] || Array).from({ length: len })
-      .map(() => exec(dv, pattern, ctx));
+    const TypedArray = (pattern as any)[BINPAT_ARRAY];
+    if (TypedArray) {
+      const byteLength = len * TypedArray.BYTES_PER_ELEMENT;
+      const value = new TypedArray(dv.buffer.slice(ctx.offset, ctx.offset + byteLength));
+      ctx.offset += byteLength;
+      return value;
+    }
+    return Array.from({ length: len }).map(() => exec(dv, pattern, ctx));
   }
   return handler;
 }
